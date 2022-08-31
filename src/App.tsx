@@ -4,10 +4,11 @@ import { useState } from "react"
 import Header from "./components/Header"
 import Form from "./components/Form"
 import List from "./components/List"
+import { TodoProps } from "./interfaces/interfaces"
 
 const App = (): JSX.Element => {
-  const [todos, setTodos] = useState([])
-
+  const [todos, setTodos] = useState<Array<TodoProps>>([])
+  
   return (
     <div>
       <Header />
@@ -17,7 +18,9 @@ const App = (): JSX.Element => {
             todos={ todos }
             setTodos={ setTodos }
           />
-          <List />
+          <List
+            todos={ todos }
+          />
         </div>
       </div>
     </div>

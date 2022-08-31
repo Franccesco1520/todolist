@@ -1,41 +1,49 @@
 //useSatate
-import { useState } from 'react'
-import { Todo } from '../interfaces/interfaces'
+import React, { useState } from 'react'
+import { AppProps, PriorityType, PriorityValues, TodoProps } from '../interfaces/interfaces'
+import ErrorMessage from './ErrorMessage'
 
-const options: string[] = ["¿Qué tan relevante es?", "🟩 No muy urgente", "🟨 Medianamente urgente", "🟥 ¡Muy Urgente!"]
+//Array de objetos de tipo PriorityValues
+const options: PriorityValues[] = [
+    { value: "default", message: "¿Qué tan relevante es?" }, 
+    { value: "low", message: "🟩 No muy urgente" },
+    { value: "medium", message: "🟨 Medianamente urgente" },
+    { value: "high", message: "🟥 ¡Muy Urgente!" }
+]
 
-const Form = (props: any): JSX.Element => {
+const Form = (props: AppProps): JSX.Element => {
     const { todos, setTodos } = props
 
     const [nombre, setNombre] = useState("")
-    const [relevancia, setRelevancia] = useState(options[0])
+    //Tipando un useState a tipo priorityType y seteandolo al value default
+    const [relevancia, setRelevancia] = useState <PriorityType>('default')
     const [descripcion, setDescripcion] = useState("")
-
     const [error, setError] = useState(false)
     
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault()       
 
-        const formValues: boolean = nombre === "" || relevancia === options[0] || descripcion === ""
+        const formInvalid: boolean = nombre === "" || relevancia === options[0].value || descripcion === ""
 
-        if(formValues){
+        if(formInvalid){
             setError(true)
             return
         }
-        setError(false)
-        
-        //Reiniciando formulario
-        setNombre("")
-        setRelevancia(options[0])
-        setDescripcion("")
 
-        const todo: Todo = {
-            nombre: nombre,
-            relevancia: relevancia,
-            descripcion: descripcion
+        const todo: TodoProps = {
+            title: nombre,
+            priority: relevancia,
+            description: descripcion,
+            done: false
         }
     
         setTodos([...todos, todo])
+
+         //Reiniciando formulario
+         setNombre("")
+         setRelevancia(options[0].value)
+         setDescripcion("")
+         setError(false)
     }
 
     return (
@@ -47,13 +55,10 @@ const Form = (props: any): JSX.Element => {
                 action=""
                 className="bg-white shadow-md rounded-lg p-5 font-regular mt-5"
                 onSubmit={ handleSubmit }
-            >   
-            {
-                error &&
-                <div className='text-center text-white px-5 py-2 bg-red-600 mb-2'>
-                    <p>¡Todos los campos son requeridos! 😤</p>
-                </div>
-            }
+            >
+
+            { error && <ErrorMessage> <p>¡Todos los campos son requeridos! 😤</p> </ErrorMessage> }
+
                 <div className="mb-5">
                     <label htmlFor="nombre" className="block text-gray uppercase">Nombre:</label>
                     <input 
@@ -61,22 +66,27 @@ const Form = (props: any): JSX.Element => {
                         className="border-2 w-full p-2 mt-2 placeholder-gray-400 rounded-md" 
                         type="text" id="nombre" 
                         placeholder="Nombre de la tarea..."
-                        onChange={ e => setNombre(e.target.value) } 
+                        onChange={ (e: React.ChangeEvent<HTMLInputElement>) => setNombre(e.target.value) } 
                     />
                 </div>
                 <div className="mb-5">
                     <label htmlFor="relevancia" className="block text-gray uppercase">Relevancia:</label>
-                    <select value={ relevancia } className="w-full border-2 p-2 mt-2 shadow-lg" id="relevancia" onChange={ e => setRelevancia(e.target.value) }>
+                    <select value={ relevancia } 
+                        className="w-full border-2 p-2 mt-2 shadow-lg" 
+                        id="relevancia" 
+                        onChange={ (e: React.ChangeEvent<HTMLSelectElement> ) => setRelevancia(e.target.value as PriorityType) }>
                         {
-                            options.map(( option: string, idx: number ) => ( 
+                            options.map(( option: PriorityValues, idx: number ) => ( 
                                 idx === 0 ? 
                                 <option
+                                    value={ option.value }
                                     hidden 
                                     key={ idx }
-                                    >{ option }</option> 
+                                    >{ option.message }</option> 
                                 : <option 
+                                    value={ option.value }
                                     key={ idx }
-                                    >{ option }</option> 
+                                    >{ option.message }</option> 
                             ))
                         }
                     </select>
@@ -88,7 +98,7 @@ const Form = (props: any): JSX.Element => {
                         className="w-full border-2 p-2 mt-2" 
                         id="descripcion" 
                         placeholder="Describa la tarea..."
-                        onChange={ e => setDescripcion(e.target.value) } 
+                        onChange={ (e: React.ChangeEvent<HTMLTextAreaElement>) => setDescripcion(e.target.value) } 
                     >
                     </textarea>
                 </div>
